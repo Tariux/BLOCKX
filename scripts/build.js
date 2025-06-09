@@ -1,13 +1,25 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+let packageData;
+try {
+    packageData = require('../package.json');
+} catch (error) {
+    packageData = {
+        name: 'BlockX-Plugin',
+        version: '1.0.0',
+    };
+}
+// Command to run Gradle build
+const gradleBuildCommand = 'gradle build';
+// Root project path (current working directory + ../)
+const rootProjectPath = path.join(process.cwd());
 
+// Static path for the JAR file
+const jarFilePath = path.join(rootProjectPath, 'build/libs/blockx-1.0.jar');
 
-const gradleBuildCommand = 'gradle build'; 
-const rootProjectPath = 'C:/Users/Tariux/Desktop/block/blockx'; 
-const jarFilePath = path.join(rootProjectPath, 'build/libs/blockx-1.0.jar'); 
-const destinationFolder = 'C:/Users/Tariux/Desktop/Git/paper/temp/the-debug/plugins'; 
-
+// Get destination folder from command-line arguments
+const destinationFolder = process.argv[2];
 
 function runGradleBuild() {
     return new Promise((resolve, reject) => {
@@ -17,8 +29,7 @@ function runGradleBuild() {
                 return;
             }
             if (stderr) {
-                
-                
+                console.error(`Gradle stderr: ${stderr}`);
             }
             console.log(stdout);
             resolve();
@@ -26,11 +37,10 @@ function runGradleBuild() {
     });
 }
 
-
 function moveJarFile() {
     return new Promise((resolve, reject) => {
         if (fs.existsSync(jarFilePath)) {
-            const destinationPath = path.join(destinationFolder, 'blockx-1.0.jar');
+            const destinationPath = path.join(destinationFolder, `${packageData.name}-${packageData.version}-${Date.now()}.jar`);
             fs.rename(jarFilePath, destinationPath, (err) => {
                 if (err) {
                     reject(`📛 Error moving file: ${err}`);
@@ -45,7 +55,6 @@ function moveJarFile() {
     });
 }
 
-
 async function buildAndMoveJar() {
     try {
         console.log('Running Gradle build...');
@@ -58,5 +67,10 @@ async function buildAndMoveJar() {
     }
 }
 
+// Check if destination folder argument is provided
+if (!destinationFolder) {
+    console.error('📛 Please provide a destination folder as an argument.');
+    process.exit(1);
+}
 
 buildAndMoveJar();
