@@ -111,7 +111,7 @@ public class BarbarianAxeAbility {
                 // }
 
                 Location particleLoc = player.getLocation().add(0, player.getHeight() * 0.7, 0); // Eye-level approx
-                player.getWorld().spawnParticle(org.bukkit.Particle.CRIT_MAGIC, particleLoc, 5, 0.4, 0.4, 0.4, 0.05);
+                // player.getWorld().spawnParticle(org.bukkit.Particle.CRIT_MAGIC, particleLoc, 5, 0.4, 0.4, 0.4, 0.05);
                 player.getWorld().spawnParticle(org.bukkit.Particle.FLAME, particleLoc, 2, 0.3, 0.3, 0.3, 0.02);
             }
         }.runTaskTimer(this.plugin, 0L, 7L); // Particles every 7 ticks
@@ -171,9 +171,9 @@ public class BarbarianAxeAbility {
 
         // 1. Visual and Sound Effects
         world.playSound(targetLocation, Sound.ENTITY_GENERIC_EXPLODE, 1.2f, 0.8f); // Slightly adjusted sound
-        world.spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE, targetLocation.clone().add(0.5, 0.5, 0.5), 1); // Main explosion particle
+        // world.spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE, targetLocation.clone().add(0.5, 0.5, 0.5), 1); // Main explosion particle
         world.spawnParticle(org.bukkit.Particle.LAVA, targetLocation.clone().add(0.5, 0.5, 0.5), 8, 0.5, 0.5, 0.5, 0.1); // Some lava/fire particles
-        world.spawnParticle(org.bukkit.Particle.SMOKE_LARGE, targetLocation.clone().add(0.5, 0.5, 0.5), 10, 0.7, 0.7, 0.7, 0.05); // Smoke
+        // world.spawnParticle(org.bukkit.Particle.SMOKE_LARGE, targetLocation.clone().add(0.5, 0.5, 0.5), 10, 0.7, 0.7, 0.7, 0.05); // Smoke
 
         // 2. Break Blocks
         List<Block> nearbyBlocks = new ArrayList<>();
@@ -196,7 +196,7 @@ public class BarbarianAxeAbility {
             if (blocksBroken >= BLOCKS_TO_BREAK) {
                 break;
             }
-            world.spawnParticle(org.bukkit.Particle.BLOCK_CRACK, blockToBreak.getLocation().clone().add(0.5, 0.5, 0.5), 20, blockToBreak.getBlockData());
+            // world.spawnParticle(org.bukkit.Particle.BLOCK_CRACK, blockToBreak.getLocation().clone().add(0.5, 0.5, 0.5), 20, blockToBreak.getBlockData());
             blockToBreak.setType(Material.AIR);
             blocksBroken++;
         }
