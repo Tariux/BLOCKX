@@ -4,10 +4,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -18,12 +21,19 @@ import java.util.List;
 
 public final class Blockx extends JavaPlugin implements Listener {
 
+    private CustomItemManager customItemManager; // For general use, though BarbarianAxeAbility gets its own instance for now
+    private BarbarianAxeAbility barbarianAxeAbility;
+
     @Override
     public void onEnable() {
         getLogger().info("Blockx Plugin Enabled");
 
+        // Initialize CustomItemManager for BarbarianAxeAbility
+        CustomItemManager axeAbilityCIM = new CustomItemManager(this);
+        this.barbarianAxeAbility = new BarbarianAxeAbility(this, axeAbilityCIM);
+
         this.getCommand("xget").setExecutor(new CommandHandler(this));
-        getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(this, this); // Registers this class for events
         createUltraCraftingTableRecipe();
     }
 
@@ -83,5 +93,28 @@ public final class Blockx extends JavaPlugin implements Listener {
                 getLogger().info("Ultra Crafting Table placed with custom texture.");
             }
         }
+    }
+
+    @EventHandler
+    public void onBarbarianAxeInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+
+        if (barbarianAxeAbility.isItemBarbarianAxe(itemInHand)) {
+            if (event.getAction().name().contains("RIGHT_CLICK")) {
+                if (barbarianAxeAbility.isCharging(player)) {
+                    barbarianAxeAbility.releaseCharge(player);
+                } else if (!barbarianAxeAbility.isOnCooldown(player)) {
+                    barbarianAxeAbility.startCharging(player);
+                }
+                // Optional: cancel event if it's a right click on a block to prevent normal interaction
+                // event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        barbarianAxeAbility.handlePlayerQuit(event.getPlayer());
     }
 }
