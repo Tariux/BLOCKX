@@ -40,7 +40,7 @@ function runGradleBuild() {
 function moveJarFile() {
     return new Promise((resolve, reject) => {
         if (fs.existsSync(jarFilePath)) {
-            const destinationPath = path.join(destinationFolder, `${packageData.name}-${packageData.version}-${Date.now()}.jar`);
+            const destinationPath = path.join(destinationFolder, `${packageData.name}-${packageData.version}.jar`);
             fs.rename(jarFilePath, destinationPath, (err) => {
                 if (err) {
                     reject(`📛 Error moving file: ${err}`);

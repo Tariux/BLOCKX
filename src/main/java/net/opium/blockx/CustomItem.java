@@ -33,7 +33,7 @@ public class CustomItem {
         switch (args[0].toLowerCase()) {
             case "help" -> recommendItems(sender);
             case "point" -> executePointEmote(player);
-            case "barbarian_axe" -> itemManager.generateItem(player, 12301, "Barbarian Axe", getBarbarianAxeAttributes(), null);
+            case "barbarian_axe" -> itemManager.generateItem(player, 12301, "Barbarian Axe", getBarbarianAxeAttributes(), Material.IRON_AXE);
             case "goliath_sword" -> itemManager.generateItem(player, 12302, "Goliath Sword", getGoliathSwordAttributes(), null);
             case "ebene_sword" -> itemManager.generateItem(player, 12303, "Ebene Sword", getEbeneSwordAttributes(), null);
             case "bone_sword" -> itemManager.generateItem(player, 12304, "Bone Sword", getBoneSwordAttributes(), null);
