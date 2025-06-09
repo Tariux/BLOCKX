@@ -22,6 +22,7 @@ public final class Blockx extends JavaPlugin implements Listener {
     public void onEnable() {
         getLogger().info("Blockx Plugin Enabled");
 
+        this.getCommand("xget").setExecutor(new CommandHandler(this));
         getServer().getPluginManager().registerEvents(this, this);
         createUltraCraftingTableRecipe();
     }

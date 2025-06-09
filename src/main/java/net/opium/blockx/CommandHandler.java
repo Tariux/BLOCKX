@@ -25,10 +25,4 @@ public class CommandHandler implements CommandExecutor {
     private void showHelp(CommandSender sender) {
         customItems.recommendItems(sender);
     }
-
-    private void onExactCommand(CommandSender sender, String arg, String match, Runnable action) {
-        if (arg.equalsIgnoreCase(match)) {
-            action.run();
-        }
-    }
 }
