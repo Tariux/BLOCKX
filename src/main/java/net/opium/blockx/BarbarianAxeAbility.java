@@ -3,7 +3,7 @@ package net.opium.blockx;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
+// import org.bukkit.Particle; // Removed as all references are fully qualified
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
