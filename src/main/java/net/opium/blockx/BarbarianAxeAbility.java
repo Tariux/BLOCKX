@@ -116,6 +116,7 @@ public class BarbarianAxeAbility {
             }
         }.runTaskTimer(this.plugin, 0L, 7L); // Particles every 7 ticks
 
+        
         playerParticleTasks.put(player.getUniqueId(), task);
         // plugin.getLogger().info(player.getName() + " started charging Barbarian Axe."); // Logged in Blockx
     }
