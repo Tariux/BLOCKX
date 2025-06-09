@@ -1,0 +1,11 @@
+name: blockx
+version: '1.0'
+main: net.opium.blockx.Blockx
+api-version: '1.21'
+load: STARTUP
+
+commands:
+  xget:
+    description: Provides custom items like the cube or shows help information.
+    usage: "/xget [<item_name>|help]"
+    aliases: [getx, blockxget]
