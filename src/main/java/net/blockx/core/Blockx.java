@@ -1,10 +1,12 @@
 package net.blockx.core;
 
+import net.blockx.abilities.AbilityManager;
 import net.blockx.abilities.BarbarianAxeAbility;
-import net.blockx.abilities.AbilityManager; // Import AbilityManager
 import net.blockx.commands.CommandHandler;
+import net.blockx.heroes.HeroManager; // Import HeroManager
 import net.blockx.items.CustomItemManager;
-import net.blockx.listeners.PlayerEventListener; // Import PlayerEventListener
+import net.blockx.listeners.HeroPickupListener; // Import HeroPickupListener
+import net.blockx.listeners.PlayerEventListener;
 
 
 import org.bukkit.Bukkit;
@@ -30,7 +32,9 @@ public final class Blockx extends JavaPlugin implements Listener {
 
     private CustomItemManager customItemManager;
     private BarbarianAxeAbility barbarianAxeAbility;
-    private AbilityManager abilityManager; // Added AbilityManager instance
+    private AbilityManager abilityManager;
+    private HeroManager heroManager; // Added HeroManager instance
+    // HeroPickupListener doesn't need to be a field if only instantiated and registered
 
     @Override
     public void onEnable() {
@@ -38,18 +42,20 @@ public final class Blockx extends JavaPlugin implements Listener {
 
         // Initialize Managers
         this.customItemManager = new CustomItemManager(this);
-        this.barbarianAxeAbility = new BarbarianAxeAbility(this, this.customItemManager);
-        this.abilityManager = new AbilityManager(this, this.customItemManager); // Initialize AbilityManager
+        this.barbarianAxeAbility = new BarbarianAxeAbility(this, this.customItemManager); // Assuming this is still needed
+        this.abilityManager = new AbilityManager(this, this.customItemManager);
+        this.heroManager = new HeroManager(this, this.customItemManager); // Initialize HeroManager
 
         // Register Command Executor
-        // CommandHandler now takes CustomItemManager directly for better dependency management
-        this.getCommand("xget").setExecutor(new CommandHandler(this, this.customItemManager));
+        // CommandHandler constructor now expects Blockx instance, CustomItemManager, and HeroManager
+        this.getCommand("xget").setExecutor(new CommandHandler(this, this.customItemManager, this.heroManager));
 
         // Register Event Listeners
-        getServer().getPluginManager().registerEvents(this, this); // For Blockx's own @EventHandlers (like crafting)
-        getServer().getPluginManager().registerEvents(new PlayerEventListener(this.abilityManager), this); // Register new PlayerEventListener
+        getServer().getPluginManager().registerEvents(this, this); // For Blockx's own @EventHandlers
+        getServer().getPluginManager().registerEvents(new PlayerEventListener(this.abilityManager), this);
+        getServer().getPluginManager().registerEvents(new HeroPickupListener(this, this.customItemManager), this); // Register HeroPickupListener
 
-        createUltraCraftingTableRecipe();
+        createUltraCraftingTableRecipe(); // Assuming this is still relevant
         getLogger().info("Blockx Systems Initialized (core package).");
     }
 
