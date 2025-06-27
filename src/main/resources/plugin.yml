@@ -1,6 +1,6 @@
 name: blockx
 version: '1.0'
-main: net.opium.blockx.Blockx
+main: net.opium.blockx.core.Blockx
 api-version: '1.21'
 load: STARTUP
 
