@@ -1,11 +1,12 @@
-package net.opium.blockx.listeners;
+package net.blockx.listeners;
 
-import net.opium.blockx.abilities.AbilityManager;
+import net.blockx.abilities.AbilityManager; // Corrected import
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+// Unused import: import org.bukkit.inventory.ItemStack;
 
 public class PlayerEventListener implements Listener {
 
@@ -16,18 +17,17 @@ public class PlayerEventListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerDamageEntity(EntityDamageByEntityEvent event) {
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) { // Renamed for clarity
         if (event.getDamager() instanceof Player) {
-            // Player is the damager, pass to AbilityManager to check for custom sword abilities
+            // No need to cast here, AbilityManager.handleAttack will do it.
             abilityManager.handleAttack(event);
         }
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        // Pass to AbilityManager to check for custom sword abilities on interact
-        // The AbilityManager will internally check item and action type (e.g. right-click)
+        // Player player = event.getPlayer(); // Player is obtained within AbilityManager if needed
+        // No need to get item here, AbilityManager.handleInteract will do it.
         abilityManager.handleInteract(event);
     }
 }

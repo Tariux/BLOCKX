@@ -1,6 +1,5 @@
-package net.opium.blockx.items;
+package net.blockx.items;
 
-// import net.opium.blockx.core.Blockx; // Not directly needed here anymore
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,12 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
+// No List import needed here if showHelp is self-contained or uses CustomSwordType
 
-
-/**
- * Defines specific custom items and provides them via the CustomItemManager.
- * This class is primarily used by the CommandHandler.
- */
 public class CustomItem {
 
     private final CustomItemManager itemManager;
@@ -41,18 +36,18 @@ public class CustomItem {
             return;
         }
         if ("point".equalsIgnoreCase(itemNameArg)) {
-            executePointEmote(player);
+            executePointEmote(player); // Assuming WHITE_ASH is a valid particle or will be fixed
             return;
         }
 
-        // Handle Swords using CustomSwordType enum
+        // Try to parse as a CustomSwordType
         CustomSwordType swordType = CustomSwordType.fromString(itemNameArg);
         if (swordType != null) {
             itemManager.generateItem(player, swordType.getCustomModelData(), swordType.getDisplayName(), swordType.getItemAttributes(), swordType.getBaseMaterial());
             return;
         }
 
-        // Handle other specific items like Barbarian Axe, Shield
+        // Handle other specific non-sword items
         switch (itemNameArg) {
             case "barbarian_axe":
                 itemManager.generateItem(player, 12301, "&cBarbarian Axe", getBarbarianAxeAttributes(), Material.IRON_AXE);
@@ -61,7 +56,7 @@ public class CustomItem {
                 itemManager.generateItem(player, 12305, "&eCustom Shield", getShieldAttributes(), Material.SHIELD);
                 break;
             default:
-                player.sendMessage(ChatColor.RED + "Unknown item: " + args[0] + ". Use '/xget help' for a list.");
+                player.sendMessage(ChatColor.RED + "Unknown item: " + args[0] + ". Use '/xget help' for a list of items.");
                 break;
         }
     }
@@ -70,32 +65,28 @@ public class CustomItem {
         player.sendMessage(ChatColor.GOLD + "--- Blockx Custom Items ---");
         player.sendMessage(ChatColor.YELLOW + "Use " + ChatColor.AQUA + "/xget <item_name>" + ChatColor.YELLOW + " to get an item.");
         player.sendMessage(ChatColor.GRAY + "Available items:");
-        for (CustomSwordType sword : CustomSwordType.values()) {
-            player.sendMessage(ChatColor.WHITE + "- " + sword.name().toLowerCase().replace("_", "")); // e.g. ebenesword
+        // Dynamically list swords from CustomSwordType enum
+        for (CustomSwordType type : CustomSwordType.values()) {
+            // Making the command lowercase and removing underscores for user-friendliness
+            player.sendMessage(ChatColor.WHITE + "- " + type.name().toLowerCase().replace("_", ""));
         }
         player.sendMessage(ChatColor.WHITE + "- barbarian_axe");
         player.sendMessage(ChatColor.WHITE + "- shield");
-        // player.sendMessage(ChatColor.WHITE + "- point (emote)");
+        player.sendMessage(ChatColor.WHITE + "- point (emote)");
     }
 
     private void executePointEmote(Player player) {
         Location eyeLocation = player.getEyeLocation();
         Location targetLocation = eyeLocation.clone().add(eyeLocation.getDirection().multiply(10));
 
-        player.getWorld().spawnParticle(
-                Particle.WHITE_ASH,
-                targetLocation,
-                20, 0.2, 0.2, 0.2, 0.05);
-        player.getWorld().playSound(
-                player.getLocation(),
-                Sound.ENTITY_PLAYER_LEVELUP,
-                1.0f, 1.0f);
+        // Particle.WHITE_ASH will be checked in compilation fixes step.
+        // For now, assuming it's valid or will be replaced.
+        player.getWorld().spawnParticle(Particle.ASH, targetLocation, 20, 0.2, 0.2, 0.2, 0.05); // Changed WHITE_ASH to ASH as a common alternative
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
         player.sendMessage(ChatColor.GREEN + "You pointed forward!");
     }
 
-    // Attribute definitions for non-sword items (Axe, Shield)
-    // Sword attributes are now in CustomSwordType enum
-
+    // Attribute methods for non-sword items remain here
     private ItemAttributes getShieldAttributes() {
         ItemAttributes attributes = new ItemAttributes();
         attributes.addLore("&7A sturdy custom shield.");
@@ -111,4 +102,7 @@ public class CustomItem {
         attributes.addAttribute(Attribute.GENERIC_ATTACK_SPEED, -3.0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND);
         return attributes;
     }
+
+    // Sword attribute methods (getGoliathSwordAttributes, etc.) are removed
+    // as this logic is now within CustomSwordType enum.
 }

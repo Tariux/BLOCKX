@@ -1,14 +1,16 @@
-package net.opium.blockx.core;
+package net.blockx.core;
 
-import net.opium.blockx.abilities.AbilityManager;
-import net.opium.blockx.abilities.BarbarianAxeAbility;
-import net.opium.blockx.commands.CommandHandler;
-import net.opium.blockx.items.CustomItemManager;
-import net.opium.blockx.listeners.PlayerEventListener; // Import the new listener
+import net.blockx.abilities.BarbarianAxeAbility;
+import net.blockx.abilities.AbilityManager; // Import AbilityManager
+import net.blockx.commands.CommandHandler;
+import net.blockx.items.CustomItemManager;
+import net.blockx.listeners.PlayerEventListener; // Import PlayerEventListener
+
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Block;
+// import org.bukkit.block.Block; // No longer directly used here
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,32 +30,32 @@ public final class Blockx extends JavaPlugin implements Listener {
 
     private CustomItemManager customItemManager;
     private BarbarianAxeAbility barbarianAxeAbility;
-    private AbilityManager abilityManager; // Manager for general sword abilities
+    private AbilityManager abilityManager; // Added AbilityManager instance
 
     @Override
     public void onEnable() {
-        getLogger().info("Blockx Plugin Enabled");
+        getLogger().info("Blockx Plugin Enabled (core package)");
 
-        // Initialize managers
+        // Initialize Managers
         this.customItemManager = new CustomItemManager(this);
         this.barbarianAxeAbility = new BarbarianAxeAbility(this, this.customItemManager);
         this.abilityManager = new AbilityManager(this, this.customItemManager); // Initialize AbilityManager
 
-        // Register command executor
+        // Register Command Executor
+        // CommandHandler now takes CustomItemManager directly for better dependency management
         this.getCommand("xget").setExecutor(new CommandHandler(this, this.customItemManager));
 
-        // Register events
-        getServer().getPluginManager().registerEvents(this, this); // For Blockx's own @EventHandlers
+        // Register Event Listeners
+        getServer().getPluginManager().registerEvents(this, this); // For Blockx's own @EventHandlers (like crafting)
         getServer().getPluginManager().registerEvents(new PlayerEventListener(this.abilityManager), this); // Register new PlayerEventListener
 
         createUltraCraftingTableRecipe();
-
-        getLogger().info("Blockx Plugin Systems Initialized.");
+        getLogger().info("Blockx Systems Initialized (core package).");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("Blockx Plugin Disabled");
+        getLogger().info("Blockx Plugin Disabled (core package)");
     }
 
     private ItemStack getUltraCraftingItem() {
@@ -74,28 +76,26 @@ public final class Blockx extends JavaPlugin implements Listener {
         if (ultraCraftingTable.getItemMeta() == null) return;
 
         NamespacedKey key = new NamespacedKey(this, "ultra_crafting_table_recipe");
+        if (Bukkit.getRecipe(key) != null) {
+            return;
+        }
+
         ShapedRecipe recipe = new ShapedRecipe(key, ultraCraftingTable);
         recipe.shape("GGG", "GCG", "GGG");
         recipe.setIngredient('G', Material.GOLD_INGOT);
         recipe.setIngredient('C', Material.CRAFTING_TABLE);
-
-        if (Bukkit.getRecipe(key) == null) {
-            Bukkit.addRecipe(recipe);
-        }
+        Bukkit.addRecipe(recipe);
     }
-
-    // Event Handlers specific to Blockx main class (e.g. Ultra Crafting Table)
-    // Barbarian Axe and general sword abilities are now handled by their respective managers/listeners
 
     @EventHandler
     public void onCraftItem(CraftItemEvent event) {
         ItemStack craftedItem = event.getRecipe().getResult();
-        if (craftedItem == null || craftedItem.getItemMeta() == null) return;
-
+        if (craftedItem == null || !craftedItem.hasItemMeta()) return;
         ItemMeta meta = craftedItem.getItemMeta();
+
         if ("Ultra Crafting Table".equals(meta.getDisplayName())) {
-            NamespacedKey key = new NamespacedKey(this, "ultra_crafting_block");
-            if (meta.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {
+             NamespacedKey pdcKey = new NamespacedKey(this, "ultra_crafting_block");
+             if (meta.getPersistentDataContainer().has(pdcKey, PersistentDataType.STRING)) {
                 ItemStack newResult = craftedItem.clone();
                 ItemMeta newMeta = newResult.getItemMeta();
                 if (newMeta != null) {
@@ -110,55 +110,47 @@ public final class Blockx extends JavaPlugin implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         ItemStack itemInHand = event.getItemInHand();
-        if (itemInHand == null || itemInHand.getItemMeta() == null) return;
-
+        if (itemInHand == null || !itemInHand.hasItemMeta()) return;
         ItemMeta meta = itemInHand.getItemMeta();
-        NamespacedKey key = new NamespacedKey(this, "ultra_crafting_block");
 
+        NamespacedKey key = new NamespacedKey(this, "ultra_crafting_block");
         if (meta.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {
             String tagValue = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
             if ("ultra_crafting_table".equals(tagValue)) {
-                getLogger().info("Ultra Crafting Table placed with custom texture.");
+                 getLogger().info("Ultra Crafting Table placed with custom texture.");
             }
         }
     }
 
-    // Barbarian Axe specific events are still here for now, but could be moved
-    // to a dedicated BarbarianAxeListener if its logic becomes more complex
-    // or if PlayerEventListener becomes too crowded.
-    // For now, PlayerEventListener handles general sword abilities.
-    // Blockx's onPlayerInteract is for BarbarianAxe a d PlayerEventListener's onPlayerInteract is for general swords.
-    // This might lead to double processing if not careful.
-    // Let's ensure PlayerEventListener handles general swords and BarbarianAxeAbility handles its own interact.
-    // The current PlayerEventListener calls abilityManager.handleInteract for *all* interactions.
-    // The BarbarianAxeAbility's onInteract is NOT CALLED by PlayerEventListener.
-    // It's called by the onBarbarianAxeInteract handler below. This is fine.
-
+    // Barbarian Axe specific interaction is still handled here.
+    // General sword interactions (damage, right-click for other abilities) are handled by PlayerEventListener -> AbilityManager.
     @EventHandler
-    public void onBarbarianAxeInteract(PlayerInteractEvent event) { // This is for Barbarian Axe only
+    public void onBarbarianAxeInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
-        if (barbarianAxeAbility.isItemBarbarianAxe(itemInHand)) {
-            // Let BarbarianAxeAbility handle its own interaction logic fully
-            // including checking for right click etc.
-            // barbarianAxeAbility.handleInteract(event); // if it had such a method
-             if (event.getAction().name().contains("RIGHT_CLICK")) {
+        if (barbarianAxeAbility != null && barbarianAxeAbility.isItemBarbarianAxe(itemInHand)) {
+            // BarbarianAxeAbility's methods (startCharging, releaseCharge) internally check for right-click context if needed.
+            // This event handler is specific to the Barbarian Axe item.
+            if (event.getAction().name().contains("RIGHT_CLICK")) { // Ensure it's a right click
                 if (barbarianAxeAbility.isCharging(player)) {
                     barbarianAxeAbility.releaseCharge(player);
-                } else if (!barbarianAxeAbility.isOnCooldown(player)) {
+                } else if (!barbarianAxeAbility.isOnCooldown(player)) { // Check cooldown before starting charge
                     barbarianAxeAbility.startCharging(player);
                 }
-                 // Potentially cancel the event if the axe interaction should be exclusive
-                 // event.setCancelled(true);
+                 // event.setCancelled(true); // Consider if cancelling the event is needed for the axe.
             }
         }
     }
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
-        barbarianAxeAbility.handlePlayerQuit(event.getPlayer());
-        // If general AbilityManager needs cleanup on player quit, call it here too
-        // e.g. abilityManager.handlePlayerQuit(event.getPlayer());
+        if (barbarianAxeAbility != null) {
+            barbarianAxeAbility.handlePlayerQuit(event.getPlayer());
+        }
+        // if (abilityManager != null && abilityManager instanceof SomePlayerQuitHandlerInterface) {
+        //    ((SomePlayerQuitHandlerInterface)abilityManager).handlePlayerQuit(event.getPlayer());
+        // }
+        // For now, AbilityManager doesn't have specific onQuit logic needing to be called.
     }
 }
